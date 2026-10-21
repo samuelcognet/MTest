@@ -35,64 +35,87 @@ const surface = new THREE.Group();
 scene.add(surface);
 
 // --------------------------------------------------
-// CREATION DE LA SURFACE DE REVOLUTION
+// CREATION DE LA ROSE PARAMETRIQUE
 // --------------------------------------------------
+// Paramètres :
+//   r     ∈ [0, 1]      : position radiale sur un pétale (centre -> bord)
+//   theta ∈ [-2π, 15π]  : enroulement spiral des pétales
 
-const segments = 80;
-const rings = 50;
+const nTheta = 260;          // résolution autour de la fleur
+const nR = 24;               // résolution radiale
+const thetaMin = -2 * Math.PI;
+const thetaMax = 15 * Math.PI;
+const echelle = 2.2;         // taille globale
+const decalageZ = -0.5;      // centre la rose verticalement
 
-const points = [];
+// Point de la surface (x, y, z) pour un couple (r, theta)
+function pointRose(r, theta) {
+  const phi = (Math.PI / 2) * Math.exp(-theta / (8 * Math.PI));
 
-// Profil de la surface :
-// u varie de -1 à 1
-// r(u) définit le rayon du vase
-function rayon(u) {
-  return 1.1 + 0.45 * Math.cos(u * Math.PI);
+  // Profil de l'enroulement des pétales
+  const m = (3.6 * theta) % (2 * Math.PI);
+  const X = 1 - 0.5 * Math.pow(1.25 * Math.pow(1 - m / Math.PI, 2) - 0.25, 2);
+
+  // Courbure du pétale
+  const yy = 1.95653 * r * r * Math.pow(1.27689 * r - 1, 2) * Math.sin(phi);
+
+  const R = X * (r * Math.sin(phi) + yy * Math.cos(phi));
+
+  return {
+    x: R * Math.sin(theta) * echelle,
+    y: R * Math.cos(theta) * echelle,
+    z: (X * (r * Math.cos(phi) - yy * Math.sin(phi)) + decalageZ) * echelle,
+    r,
+    theta
+  };
 }
 
-// Génération des lignes du wireframe
-for (let i = 0; i <= rings; i++) {
+// Couleur : rouges variés (carmin, rouge vif, grenat, touche de corail)
+const couleurTmp = new THREE.Color();
+function couleurRose(p) {
+  // Variation de teinte autour du rouge (légèrement pourpre -> orangé)
+  const mix = 0.5 + 0.5 * Math.sin(p.theta * 0.9 + p.r * 3.0);
+  const hue = (0.98 + 0.05 * mix) % 1;
 
-  const u = -1 + 2 * i / rings;
+  // Saturation élevée, un peu moins vers le bord des pétales
+  const sat = 0.95 - 0.25 * Math.pow(p.r, 3);
 
-  const r = rayon(u);
-  const z = u * 2.2;
+  // Cœur sombre (grenat), bords plus clairs
+  const light = 0.22 + 0.38 * Math.pow(p.r, 1.3) + 0.06 * Math.sin(p.theta * 2.0);
 
-  for (let j = 0; j <= segments; j++) {
+  couleurTmp.setHSL(hue, sat, light);
+  return [couleurTmp.r, couleurTmp.g, couleurTmp.b];
+}
 
-    const v = 2 * Math.PI * j / segments;
+// Grille de points
+const grille = [];
+for (let i = 0; i <= nTheta; i++) {
+  const theta = thetaMin + (thetaMax - thetaMin) * i / nTheta;
+  const ligne = [];
+  for (let j = 0; j <= nR; j++) {
+    ligne.push(pointRose(j / nR, theta));
+  }
+  grille.push(ligne);
+}
 
-    const x = r * Math.cos(v);
-    const y = r * Math.sin(v);
+// Génération des segments du wireframe
+const points = [];
+const colors = [];
 
-    // Ligne circulaire
-    if (j < segments) {
+function ajouterSegment(a, b) {
+  points.push(a.x, a.y, a.z, b.x, b.y, b.z);
+  colors.push(...couleurRose(a), ...couleurRose(b));
+}
 
-      const v2 = 2 * Math.PI * (j + 1) / segments;
+for (let i = 0; i <= nTheta; i++) {
+  for (let j = 0; j <= nR; j++) {
+    const p = grille[i][j];
 
-      points.push(
-        x, y, z,
-        r * Math.cos(v2),
-        r * Math.sin(v2),
-        z
-      );
-    }
+    // Ligne radiale (centre -> bord du pétale)
+    if (j < nR) ajouterSegment(p, grille[i][j + 1]);
 
-    // Ligne verticale du maillage
-    if (i < rings) {
-
-      const u2 = -1 + 2 * (i + 1) / rings;
-
-      const r2 = rayon(u2);
-      const z2 = u2 * 2.2;
-
-      points.push(
-        x, y, z,
-        r2 * Math.cos(v),
-        r2 * Math.sin(v),
-        z2
-      );
-    }
+    // Ligne spirale (autour de la fleur)
+    if (i < nTheta) ajouterSegment(p, grille[i + 1][j]);
   }
 }
 
@@ -103,12 +126,18 @@ geometry.setAttribute(
   "position",
   new THREE.Float32BufferAttribute(points, 3)
 );
+geometry.setAttribute(
+  "color",
+  new THREE.Float32BufferAttribute(colors, 3)
+);
 
-// Matériau lumineux
+// Matériau lumineux, couleurs par sommet
 const material = new THREE.LineBasicMaterial({
-  color: 0x35eaff,
+  vertexColors: true,
   transparent: true,
-  opacity: 0.8
+  opacity: 0.85,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false
 });
 
 // Wireframe
