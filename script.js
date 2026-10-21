@@ -37,57 +37,55 @@ scene.add(surface);
 // --------------------------------------------------
 // CREATION DE LA ROSE PARAMETRIQUE
 // --------------------------------------------------
-// Paramètres :
-//   r     ∈ [0, 1]      : position radiale sur un pétale (centre -> bord)
-//   theta ∈ [-2π, 15π]  : enroulement spiral des pétales
+// r     ∈ [0, 1]      : position radiale sur un pétale (centre -> bord)
+// theta ∈ [-2π, 15π]  : enroulement spiral des pétales
+// L'axe de la rose est l'axe Y (vertical à l'écran).
 
-const nTheta = 260;          // résolution autour de la fleur
-const nR = 24;               // résolution radiale
+const nTheta = 200;          // résolution autour de la fleur
+const nR = 22;               // résolution radiale
 const thetaMin = -2 * Math.PI;
 const thetaMax = 15 * Math.PI;
 const echelle = 2.2;         // taille globale
-const decalageZ = -0.5;      // centre la rose verticalement
+const decalageY = -0.5;      // centre la rose verticalement
 
-// Point de la surface (x, y, z) pour un couple (r, theta)
+// Point de la surface pour un couple (r, theta)
 function pointRose(r, theta) {
   const phi = (Math.PI / 2) * Math.exp(-theta / (8 * Math.PI));
 
-  // Profil de l'enroulement des pétales
   const m = (3.6 * theta) % (2 * Math.PI);
   const X = 1 - 0.5 * Math.pow(1.25 * Math.pow(1 - m / Math.PI, 2) - 0.25, 2);
 
-  // Courbure du pétale
   const yy = 1.95653 * r * r * Math.pow(1.27689 * r - 1, 2) * Math.sin(phi);
 
   const R = X * (r * Math.sin(phi) + yy * Math.cos(phi));
+  const hauteur = X * (r * Math.cos(phi) - yy * Math.sin(phi));
 
   return {
     x: R * Math.sin(theta) * echelle,
-    y: R * Math.cos(theta) * echelle,
-    z: (X * (r * Math.cos(phi) - yy * Math.sin(phi)) + decalageZ) * echelle,
+    y: (hauteur + decalageY) * echelle,   // hauteur -> axe vertical de l'écran
+    z: R * Math.cos(theta) * echelle,
     r,
     theta
   };
 }
 
-// Couleur : rouges variés (carmin, rouge vif, grenat, touche de corail)
+// Couleur en nuances de rouge (carmin, rouge vif, grenat, touche de corail)
+// 'eclaircir' permet d'obtenir une version plus claire pour les lignes du maillage
 const couleurTmp = new THREE.Color();
-function couleurRose(p) {
-  // Variation de teinte autour du rouge (légèrement pourpre -> orangé)
+function couleurRose(p, eclaircir = 0) {
   const mix = 0.5 + 0.5 * Math.sin(p.theta * 0.9 + p.r * 3.0);
   const hue = (0.98 + 0.05 * mix) % 1;
-
-  // Saturation élevée, un peu moins vers le bord des pétales
   const sat = 0.95 - 0.25 * Math.pow(p.r, 3);
+  const light = 0.22 + 0.38 * Math.pow(p.r, 1.3)
+              + 0.06 * Math.sin(p.theta * 2.0) + eclaircir;
 
-  // Cœur sombre (grenat), bords plus clairs
-  const light = 0.22 + 0.38 * Math.pow(p.r, 1.3) + 0.06 * Math.sin(p.theta * 2.0);
-
-  couleurTmp.setHSL(hue, sat, light);
+  couleurTmp.setHSL(hue, sat, Math.min(light, 0.9));
   return [couleurTmp.r, couleurTmp.g, couleurTmp.b];
 }
 
-// Grille de points
+// --------------------------------------------------
+// GRILLE DE POINTS
+// --------------------------------------------------
 const grille = [];
 for (let i = 0; i <= nTheta; i++) {
   const theta = thetaMin + (thetaMax - thetaMin) * i / nTheta;
@@ -98,55 +96,93 @@ for (let i = 0; i <= nTheta; i++) {
   grille.push(ligne);
 }
 
-// Génération des segments du wireframe
+const index = (i, j) => i * (nR + 1) + j;
+
+// --------------------------------------------------
+// SURFACE COLOREE (mesh triangulé)
+// --------------------------------------------------
+const positionsSurf = [];
+const couleursSurf = [];
+const indices = [];
+
+for (let i = 0; i <= nTheta; i++) {
+  for (let j = 0; j <= nR; j++) {
+    const p = grille[i][j];
+    positionsSurf.push(p.x, p.y, p.z);
+    couleursSurf.push(...couleurRose(p));
+  }
+}
+
+for (let i = 0; i < nTheta; i++) {
+  for (let j = 0; j < nR; j++) {
+    const a = index(i, j);
+    const b = index(i + 1, j);
+    const c = index(i + 1, j + 1);
+    const d = index(i, j + 1);
+    indices.push(a, b, d, b, c, d);
+  }
+}
+
+const geometrieSurface = new THREE.BufferGeometry();
+geometrieSurface.setAttribute("position", new THREE.Float32BufferAttribute(positionsSurf, 3));
+geometrieSurface.setAttribute("color", new THREE.Float32BufferAttribute(couleursSurf, 3));
+geometrieSurface.setIndex(indices);
+geometrieSurface.computeVertexNormals();
+
+const materiauSurface = new THREE.MeshLambertMaterial({
+  vertexColors: true,
+  side: THREE.DoubleSide,        // les pétales sont visibles des deux côtés
+  polygonOffset: true,           // repousse légèrement la surface pour que
+  polygonOffsetFactor: 1,        // les lignes ne "clignotent" pas dessus
+  polygonOffsetUnits: 1
+});
+
+const mesh = new THREE.Mesh(geometrieSurface, materiauSurface);
+surface.add(mesh);
+
+// Lumières (nécessaires au rendu ombré de la surface)
+// Supprime ces lignes si ta scène en contient déjà.
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const lumiere = new THREE.DirectionalLight(0xffffff, 0.9);
+lumiere.position.set(3, 5, 4);
+scene.add(lumiere);
+
+// --------------------------------------------------
+// LIGNES DU MAILLAGE (wireframe)
+// --------------------------------------------------
 const points = [];
 const colors = [];
 
 function ajouterSegment(a, b) {
   points.push(a.x, a.y, a.z, b.x, b.y, b.z);
-  colors.push(...couleurRose(a), ...couleurRose(b));
+  colors.push(...couleurRose(a, 0.18), ...couleurRose(b, 0.18));
 }
 
 for (let i = 0; i <= nTheta; i++) {
   for (let j = 0; j <= nR; j++) {
     const p = grille[i][j];
-
-    // Ligne radiale (centre -> bord du pétale)
-    if (j < nR) ajouterSegment(p, grille[i][j + 1]);
-
-    // Ligne spirale (autour de la fleur)
-    if (i < nTheta) ajouterSegment(p, grille[i + 1][j]);
+    if (j < nR) ajouterSegment(p, grille[i][j + 1]);   // ligne radiale
+    if (i < nTheta) ajouterSegment(p, grille[i + 1][j]); // ligne spirale
   }
 }
 
-// Géométrie des lignes
-const geometry = new THREE.BufferGeometry();
+const geometrieLignes = new THREE.BufferGeometry();
+geometrieLignes.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
+geometrieLignes.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
 
-geometry.setAttribute(
-  "position",
-  new THREE.Float32BufferAttribute(points, 3)
-);
-geometry.setAttribute(
-  "color",
-  new THREE.Float32BufferAttribute(colors, 3)
-);
-
-// Matériau lumineux, couleurs par sommet
-const material = new THREE.LineBasicMaterial({
+const materiauLignes = new THREE.LineBasicMaterial({
   vertexColors: true,
   transparent: true,
-  opacity: 0.85,
-  blending: THREE.AdditiveBlending,
-  depthWrite: false
+  opacity: 0.6
 });
 
-// Wireframe
-const wireframe = new THREE.LineSegments(
-  geometry,
-  material
-);
-
+const wireframe = new THREE.LineSegments(geometrieLignes, materiauLignes);
 surface.add(wireframe);
+
+// --------------------------------------------------
+// ANIMATION : à placer dans ta boucle d'animation
+// --------------------------------------------------
+// surface.rotation.y += 0.005;   // rotation de la rose sur elle-même
 
 // --------------------------------------------------
 // INTERACTION SOURIS ET TELEPHONE
