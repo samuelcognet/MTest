@@ -252,21 +252,6 @@ container.addEventListener("pointercancel", () => {
   isDragging = false;
 });
 
-// --------------------------------------------------
-// BOUTON RESET
-// --------------------------------------------------
-
-document.getElementById("reset").addEventListener(
-  "click",
-  () => {
-
-    surface.rotation.set(0, 0, 0);
-  surface.scale.set(1, 1, 1);
-
-  camera.position.set(0, 0, 8);
-  camera.lookAt(0, 0, 0);
-  }
-);
 
 // --------------------------------------------------
 // ADAPTATION A LA TAILLE DE L'ECRAN
