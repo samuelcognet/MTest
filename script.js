@@ -1,28 +1,6 @@
 
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
 
-// --------------------------------------------------
-// PARAMETRES DE L'INTRO
-// --------------------------------------------------
-const INTRO_TEXTE = "Une rose pour toi";   // texte affiché
-const INTRO_DUREE = 3000;                  // durée d'affichage (ms)
-const INTRO_FONDU = 1500;                  // durée du fondu (ms)
-
-const intro = document.getElementById("intro");
-document.getElementById("intro-texte").textContent = INTRO_TEXTE;
-intro.style.transitionDuration = INTRO_FONDU + "ms";
-
-// La rose est cachée pendant l'affichage du texte
-surface.visible = false;
-
-setTimeout(() => {
-  surface.visible = true;           // la rose existe dès le début du fondu
-  intro.classList.add("masque");    // lance le fondu CSS
-
-  // Une fois le fondu terminé, on retire complètement le conteneur
-  setTimeout(() => intro.remove(), INTRO_FONDU);
-}, INTRO_DUREE);
-
 const container = document.getElementById("scene");
 
 // --------------------------------------------------
@@ -55,6 +33,28 @@ container.appendChild(renderer.domElement);
 // Groupe contenant notre surface
 const surface = new THREE.Group();
 scene.add(surface);
+
+// --------------------------------------------------
+// PARAMETRES DE L'INTRO
+// --------------------------------------------------
+const INTRO_TEXTE = "Une rose pour toi";   // texte affiché
+const INTRO_DUREE = 3000;                  // durée d'affichage (ms)
+const INTRO_FONDU = 1500;                  // durée du fondu (ms)
+
+const intro = document.getElementById("intro");
+document.getElementById("intro-texte").textContent = INTRO_TEXTE;
+intro.style.transitionDuration = INTRO_FONDU + "ms";
+
+// La rose est cachée pendant l'affichage du texte
+surface.visible = false;
+
+setTimeout(() => {
+  surface.visible = true;           // la rose existe dès le début du fondu
+  intro.classList.add("masque");    // lance le fondu CSS
+
+  // Une fois le fondu terminé, on retire complètement le conteneur
+  setTimeout(() => intro.remove(), INTRO_FONDU);
+}, INTRO_DUREE);
 
 // --------------------------------------------------
 // CREATION DE LA ROSE PARAMETRIQUE
