@@ -18,6 +18,28 @@ body {
   text-align: center;
 }
 
+#intro {
+  position: fixed;
+  inset: 0;                    /* plein écran */
+  z-index: 10;                 /* au-dessus du canvas */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;            /* même couleur que le fond de ta scène */
+  color: #fff;
+  font-family: Georgia, serif;
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  letter-spacing: 0.1em;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 1.5s ease;   /* la durée sera écrasée par le JS */
+}
+
+#intro.masque {
+  opacity: 0;
+  pointer-events: none;        /* ne bloque plus la souris pendant le fondu */
+}
+
 h1 {
   font-size: clamp(24px, 5vw, 38px);
   margin-bottom: 8px;
