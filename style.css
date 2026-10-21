@@ -8,15 +8,23 @@ body {
   background: #080d18;
   color: #eafaff;
   font-family: Arial, sans-serif;
+  
+  /* --- AJOUTS POUR LE CENTRAGE --- */
+  display: flex;
+  justify-content: center; /* Centre horizontalement le container */
+  align-items: center;     /* Centre verticalement le container */
+  min-height: 100vh;       /* Force le body à faire 100% de la hauteur de l'écran */
+  box-sizing: border-box;  /* Évite les barres de défilement indésirables */
 }
 
 .container {
   width: 100%;
   max-width: 900px;
-  margin: auto;
+  /* Le 'margin: auto' n'est plus obligatoire avec Flexbox, mais vous pouvez le laisser */
   padding: 24px 16px;
   text-align: center;
 }
+
 
 #intro {
   position: fixed;
@@ -42,7 +50,7 @@ body {
 
 #intro-texte {
   font-family: Georgia, 'Times New Roman', Times, serif;
-  font-size: 1.5rem;
+  font-size: 24px;
   line-height: 1.8;
   font-style: italic;
   text-align: center;
@@ -57,7 +65,7 @@ body {
   border-radius: 16px;
   background: radial-gradient(
     circle,
-    #142d43 0%,
+    #091520 0%,
     #080d18 75%
   );
   touch-action: none;
@@ -70,9 +78,18 @@ body {
 }
 
 .signature {
-  font-size: 14px;
+  /* Positionnement */
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  right: 0;
+  margin: 0;
+
+  /* Style */
+  font-size: 11px;
   color: #91b4c9;
-  margin: 20px 0;
+  /* margin: 20px 0; */
+  font-style: italic;
 }
 
 @media (max-width: 600px) {

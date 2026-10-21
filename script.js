@@ -39,7 +39,7 @@ scene.add(surface);
 // PARAMETRES DE L'INTRO
 // --------------------------------------------------
 // const INTRO_TEXTE = "Une rose pour toi";   // texte affiché
-const INTRO_DUREE = 3000;                  // durée d'affichage (ms)
+const INTRO_DUREE = 5000;                  // durée d'affichage (ms)
 const INTRO_FONDU = 2000;                  // durée du fondu (ms)
 
 const intro = document.getElementById("intro");
