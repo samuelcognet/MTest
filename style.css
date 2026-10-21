@@ -1,0 +1,83 @@
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #080d18;
+  color: #eafaff;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+  margin: auto;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+h1 {
+  font-size: clamp(24px, 5vw, 38px);
+  margin-bottom: 8px;
+  font-weight: 400;
+  letter-spacing: 2px;
+}
+
+.subtitle {
+  color: #8ba6bd;
+  margin-bottom: 24px;
+}
+
+#scene {
+  width: 100%;
+  height: min(65vh, 550px);
+  min-height: 300px;
+  overflow: hidden;
+  border: 1px solid #183348;
+  border-radius: 16px;
+  background: radial-gradient(
+    circle,
+    #142d43 0%,
+    #080d18 75%
+  );
+  touch-action: none;
+}
+
+#scene canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.instructions {
+  font-size: 14px;
+  color: #91b4c9;
+  margin: 20px 0;
+}
+
+button {
+  background: #102b40;
+  border: 1px solid #36d9e9;
+  color: #7cecf5;
+  border-radius: 30px;
+  padding: 12px 24px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+button:active {
+  background: #20536a;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 20px 12px;
+  }
+
+  #scene {
+    height: 60vh;
+    min-height: 350px;
+  }
+}
