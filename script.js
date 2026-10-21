@@ -16,7 +16,8 @@ const camera = new THREE.PerspectiveCamera(
   100
 );
 
-camera.position.set(0, 0, 8);
+camera.position.set(0, 2, 8);
+camera.lookAt(0, 0, 0);
 
 // Rendu
 const renderer = new THREE.WebGLRenderer({
@@ -37,12 +38,12 @@ scene.add(surface);
 // --------------------------------------------------
 // PARAMETRES DE L'INTRO
 // --------------------------------------------------
-const INTRO_TEXTE = "Une rose pour toi";   // texte affiché
+// const INTRO_TEXTE = "Une rose pour toi";   // texte affiché
 const INTRO_DUREE = 3000;                  // durée d'affichage (ms)
-const INTRO_FONDU = 1500;                  // durée du fondu (ms)
+const INTRO_FONDU = 2000;                  // durée du fondu (ms)
 
 const intro = document.getElementById("intro");
-document.getElementById("intro-texte").textContent = INTRO_TEXTE;
+// document.getElementById("intro-texte").textContent = INTRO_TEXTE;
 intro.style.transitionDuration = INTRO_FONDU + "ms";
 
 // La rose est cachée pendant l'affichage du texte

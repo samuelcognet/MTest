@@ -40,16 +40,12 @@ body {
   pointer-events: none;        /* ne bloque plus la souris pendant le fondu */
 }
 
-h1 {
-  font-size: clamp(24px, 5vw, 38px);
-  margin-bottom: 8px;
-  font-weight: 400;
-  letter-spacing: 2px;
-}
-
-.subtitle {
-  color: #8ba6bd;
-  margin-bottom: 24px;
+#intro-texte {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 1.5rem;
+  line-height: 1.8;
+  font-style: italic;
+  text-align: center;
 }
 
 #scene {
@@ -73,24 +69,10 @@ h1 {
   height: 100%;
 }
 
-.instructions {
+.signature {
   font-size: 14px;
   color: #91b4c9;
   margin: 20px 0;
-}
-
-button {
-  background: #102b40;
-  border: 1px solid #36d9e9;
-  color: #7cecf5;
-  border-radius: 30px;
-  padding: 12px 24px;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-button:active {
-  background: #20536a;
 }
 
 @media (max-width: 600px) {
