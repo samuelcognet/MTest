@@ -42,17 +42,21 @@ scene.add(surface);
 // L'axe de la rose est l'axe Y (vertical à l'écran).
 
 const nTheta = 200;          // résolution autour de la fleur
-const nR = 22;               // résolution radiale
-const thetaMin = -2 * Math.PI;
+const nR = 35;               // résolution radiale
+const thetaMin = -20 * Math.PI / 9;
 const thetaMax = 15 * Math.PI;
 const echelle = 2.2;         // taille globale
 const decalageY = -0.5;      // centre la rose verticalement
+
+// Modulo toujours positif (comme Mod en maths)
+const modPositif = (a, n) => ((a % n) + n) % n;
 
 // Point de la surface pour un couple (r, theta)
 function pointRose(r, theta) {
   const phi = (Math.PI / 2) * Math.exp(-theta / (8 * Math.PI));
 
-  const m = (3.6 * theta) % (2 * Math.PI);
+  // m ∈ [0, 2π[ pour toute valeur de theta, y compris négative
+  const m = modPositif(3.6 * theta, 2 * Math.PI);
   const X = 1 - 0.5 * Math.pow(1.25 * Math.pow(1 - m / Math.PI, 2) - 0.25, 2);
 
   const yy = 1.95653 * r * r * Math.pow(1.27689 * r - 1, 2) * Math.sin(phi);
@@ -62,7 +66,7 @@ function pointRose(r, theta) {
 
   return {
     x: R * Math.sin(theta) * echelle,
-    y: (hauteur + decalageY) * echelle,   // hauteur -> axe vertical de l'écran
+    y: (hauteur + decalageY) * echelle,
     z: R * Math.cos(theta) * echelle,
     r,
     theta
